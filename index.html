@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#14082b" />
+    <title>PVP Quiz Battle</title>
+    <script type="module" crossorigin src="./assets/index-D6HZ0vpe.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/three-BuAHUSQW.js">
+    <link rel="modulepreload" crossorigin href="./assets/model-loaders-K2eobmyU.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-Dxlwtpo7.css">
+  </head>
+  <body>
+    <div id="app">
+      <main id="menu-screen" class="screen active">
+        <div class="menu-inner">
+          <header class="menu-head">
+            <p class="eyebrow">KNOWLEDGE IS POWER</p>
+            <h1 class="brand-title">PVP <span>Quiz Battle</span></h1>
+            <p class="menu-sub">答题即攻击 · 知识即战斗力</p>
+          </header>
+
+          <section class="setup-grid" aria-label="角色选择">
+            <div class="player-setup">
+              <div class="setup-title">
+                <span class="dot dot-p1"></span>
+                <span>玩家 1 <small>PLAYER ONE</small></span>
+              </div>
+              <div class="character-picker" id="p1-picker"></div>
+              <div class="loadout-row">
+                <label class="field loadout-field">
+                  <span>攻击方式</span>
+                  <select id="p1-attack-select"></select>
+                </label>
+                <label class="field loadout-field">
+                  <span>命中特效</span>
+                  <select id="p1-effect-select"></select>
+                </label>
+              </div>
+              <div class="setup-meta" id="p1-meta"></div>
+            </div>
+
+            <div class="vs-badge" aria-hidden="true"><span class="vs-ring">VS</span></div>
+
+            <div class="player-setup">
+              <div class="setup-title">
+                <span class="dot dot-p2"></span>
+                <span>玩家 2 <small>PLAYER TWO</small></span>
+              </div>
+              <div class="character-picker" id="p2-picker"></div>
+              <div class="loadout-row">
+                <label class="field loadout-field">
+                  <span>攻击方式</span>
+                  <select id="p2-attack-select"></select>
+                </label>
+                <label class="field loadout-field">
+                  <span>命中特效</span>
+                  <select id="p2-effect-select"></select>
+                </label>
+              </div>
+              <div class="setup-meta" id="p2-meta"></div>
+            </div>
+          </section>
+
+          <section class="menu-controls" aria-label="对局设置">
+            <div class="settings-box">
+              <label class="field">
+                <span>题库</span>
+                <select id="bank-select">
+                  <option value="zh">中文 HSK</option>
+                  <option value="en">英语 IELTS</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>答题时长</span>
+                <select id="timer-select">
+                  <option value="5">5 秒</option>
+                  <option value="10" selected>10 秒</option>
+                  <option value="15">15 秒</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>题目数量</span>
+                <select id="round-select">
+                  <option value="5">5 题</option>
+                  <option value="8">8 题</option>
+                  <option value="12" selected>12 题</option>
+                </select>
+              </label>
+              <label class="field check-field">
+                <input id="sound-toggle" type="checkbox" checked />
+                <span>音效</span>
+              </label>
+            </div>
+
+            <div class="sound-settings" aria-label="音效选择">
+              <div class="sound-settings-title">音效选择</div>
+              <label class="field">
+                <span>进场</span>
+                <select id="sound-entrance-select"></select>
+              </label>
+              <label class="field">
+                <span>倒计时</span>
+                <select id="sound-countdown-select"></select>
+              </label>
+              <label class="field">
+                <span>攻击/命中</span>
+                <select id="sound-attack-select"></select>
+              </label>
+              <label class="field">
+                <span>游戏结束</span>
+                <select id="sound-gameover-select"></select>
+              </label>
+              <label class="field">
+                <span>正确答案</span>
+                <select id="sound-correct-select"></select>
+              </label>
+            </div>
+
+            <div class="menu-actions">
+              <button id="start-btn" class="btn-primary" type="button">
+                <i data-lucide="swords"></i><span>开始战斗</span>
+              </button>
+              <button id="manage-btn" class="btn-secondary" type="button">
+                <i data-lucide="book-open"></i><span>编辑题库</span>
+              </button>
+              <button id="wrong-bank-menu-btn" class="btn-secondary" type="button">
+                <i data-lucide="book-open"></i><span>错题库</span>
+              </button>
+            </div>
+            <p class="controls-hint">P1：数字键 1-4 选答案　|　P2：A / S / D / F 选答案　|　倒计时结束前可改选</p>
+          </section>
+        </div>
+      </main>
+
+      <section id="battle-screen" class="screen">
+        <div class="battle-layout">
+          <header class="battle-hud">
+            <div class="hud-player hud-p1">
+              <span class="hud-tag">PLAYER ONE</span>
+              <div class="hud-name" id="hud-p1-name">玩家 1</div>
+              <div class="hud-hp" id="hud-p1-hp"></div>
+            </div>
+            <div class="hud-center">
+              <div class="round-label" id="round-label">第 1 / 12 题</div>
+              <div class="timer-ring" aria-label="倒计时"><span id="timer-value">10</span></div>
+            </div>
+            <div class="hud-player hud-p2">
+              <span class="hud-tag">PLAYER TWO</span>
+              <div class="hud-name" id="hud-p2-name">玩家 2</div>
+              <div class="hud-hp" id="hud-p2-hp"></div>
+            </div>
+          </header>
+
+          <div class="arena-wrap">
+            <div id="arena" aria-label="3D 战斗场地"></div>
+            <div id="battle-banner" class="battle-banner" aria-live="polite"></div>
+            <button id="exit-btn" class="icon-btn" type="button" title="返回主菜单" aria-label="返回主菜单">
+              <i data-lucide="log-out"></i>
+            </button>
+          </div>
+
+          <footer class="answer-area">
+            <div class="answer-panel answer-p1">
+              <div class="answer-title">
+                <span class="dot dot-p1"></span>
+                <span id="p1-panel-name">玩家 1</span>
+                <span class="answer-keys" aria-hidden="true">KEYS 1-8</span>
+                <span class="answer-status" id="p1-status"></span>
+              </div>
+              <div class="question-text" id="p1-question"></div>
+              <div class="option-grid" id="p1-options"></div>
+            </div>
+            <div class="answer-panel answer-p2">
+              <div class="answer-title">
+                <span class="dot dot-p2"></span>
+                <span id="p2-panel-name">玩家 2</span>
+                <span class="answer-keys" aria-hidden="true">KEYS A-K</span>
+                <span class="answer-status" id="p2-status"></span>
+              </div>
+              <div class="question-text" id="p2-question"></div>
+              <div class="option-grid" id="p2-options"></div>
+            </div>
+          </footer>
+        </div>
+      </section>
+
+      <section id="result-screen" class="screen">
+        <div class="result-card">
+          <p class="eyebrow">BATTLE RESULT</p>
+          <h2 id="result-title">PLAYER A WIN</h2>
+          <div class="result-players" id="result-players"></div>
+          <div id="result-wrong" class="result-wrong"></div>
+          <button id="result-wrong-bank-btn" class="btn-secondary" type="button">
+            <i data-lucide="book-open"></i><span>查看错题库</span>
+          </button>
+          <div class="result-stats" id="result-stats"></div>
+          <button id="again-btn" class="btn-primary" type="button">
+            <i data-lucide="rotate-ccw"></i><span>再来一局</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="wrong-screen" class="screen">
+        <div class="wrong-layout">
+          <header class="editor-head">
+            <div class="editor-heading">
+              <p class="eyebrow">WRONG QUESTION BANK</p>
+              <h2>错题库</h2>
+            </div>
+            <div class="editor-tools">
+              <label class="field">
+                <span>题库</span>
+                <select id="wrong-bank-select"></select>
+              </label>
+              <button id="wrong-clear-btn" class="btn-danger" type="button">
+                <i data-lucide="trash-2"></i><span>清空错题库</span>
+              </button>
+              <button id="wrong-back-btn" class="btn-secondary" type="button">
+                <i data-lucide="arrow-left"></i><span>返回</span>
+              </button>
+            </div>
+          </header>
+          <div class="wrong-body">
+            <div id="wrong-status" class="editor-status" aria-live="polite"></div>
+            <div id="wrong-list" class="wrong-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="editor-screen" class="screen">
+        <div class="editor-layout">
+          <header class="editor-head">
+            <div class="editor-heading">
+              <p class="eyebrow">QUESTION BANK MANAGER</p>
+              <h2>题库管理</h2>
+            </div>
+            <div class="editor-tools">
+              <label class="field">
+                <span>题库</span>
+                <select id="editor-bank-select"></select>
+              </label>
+              <button id="editor-back-btn" class="btn-secondary" type="button">
+                <i data-lucide="arrow-left"></i><span>返回</span>
+              </button>
+            </div>
+          </header>
+
+          <div class="editor-body">
+            <aside class="editor-list-panel">
+              <div id="question-list" class="question-list"></div>
+            </aside>
+
+            <form id="question-form" class="editor-form" autocomplete="off">
+              <div class="editor-form-head">
+                <h3 id="editor-form-title">新增题目</h3>
+                <span id="editor-status" class="editor-status" aria-live="polite"></span>
+              </div>
+
+              <label class="form-field">
+                <span>题目内容</span>
+                <textarea id="question-text" rows="4" placeholder="输入题目内容"></textarea>
+              </label>
+
+              <div class="form-row">
+                <label class="form-field">
+                  <span>题型</span>
+                  <select id="question-type">
+                    <option value="hsk">HSK 中文</option>
+                    <option value="ielts">IELTS 英语</option>
+                  </select>
+                </label>
+                <label class="form-field">
+                  <span>难度</span>
+                  <select id="question-difficulty">
+                    <option value="1">1 基础</option>
+                    <option value="2">2 进阶</option>
+                    <option value="3">3 高阶</option>
+                  </select>
+                </label>
+              </div>
+
+              <fieldset class="form-field options-field">
+                <legend>选项（勾选正确答案）</legend>
+                <div id="options-container" class="options-container"></div>
+                <button id="add-option-btn" class="btn-secondary btn-small" type="button">
+                  <i data-lucide="plus"></i><span>添加选项</span>
+                </button>
+              </fieldset>
+
+              <div class="editor-form-actions">
+                <button id="save-question-btn" class="btn-primary" type="button">
+                  <i data-lucide="save"></i><span>保存题目</span>
+                </button>
+                <button id="delete-question-btn" class="btn-danger" type="button" disabled>
+                  <i data-lucide="trash-2"></i><span>删除题目</span>
+                </button>
+                <button id="cancel-edit-btn" class="btn-secondary" type="button">
+                  <i data-lucide="x"></i><span>取消</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
